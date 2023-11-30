@@ -21,7 +21,7 @@ r = 0;
 p = 2;
 q = 0;
 err_before = 1000;
-
+t=cputime;
 for i = 1:i_max
     r_before = r;
     r=r+1;
@@ -91,5 +91,34 @@ for i = 1:i_max
     err_before = err;
     disp([i, r, err, p]);
     Y0= Y0 - delta*PX;
+    % 将稀疏矩阵转换为完全矩阵
+if mod(i,50)==0
+X_full = full(X);
+
+len = 100
+% 分离三个颜色通道
+R = X_full(1:len*1, :);         % 红色通道
+G = X_full(len+1:len*2, :);      % 绿色通道
+B = X_full(len*2+1:end, :);       % 蓝色通道
+
+
+% 重组成一个三维彩色图像
+image = cat(3, R, G, B);
+
+% 确保图像数据类型是 uint8
+if ~isa(image, 'uint8')
+    % 标准化到 0 到 1 范围
+    image = image - min(image(:));
+    image = image / max(image(:));
+    % 转换到 0 到 255 范围，并转为 uint8
+    image = uint8(image * 255);
+end
+
+% 使用 imwrite 保存图像
+filename = sprintf('output_image_SVT_Q_i%d.jpg', i);
+imwrite(image, filename);
+t_SVT = cputime - t
+disp(t_SVT)
+end
 end
 end
